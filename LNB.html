@@ -1,0 +1,110 @@
+<!Doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Local Navigation Bar</title>
+<link rel="stylesheet" href="css/style.css">
+<script>
+window.addEventListener("load",function(){
+	var wrap=null;
+	var nav=null;
+	var lnb=null;
+	var UlArray=new Array;
+	var UlHeight="50px";
+	var LnbFlag=true;
+	
+	function CreateLnb(className){
+		wrap=document.querySelector(className);
+		nav=document.createElement("nav");
+		lnb=document.createElement("ul");
+		wrap.appendChild(nav);
+		nav.appendChild(lnb);
+	}
+	CreateLnb(".wrap");
+	
+	function init(){
+		setTimeout(function(){
+			var request=new XMLHttpRequest();
+			var requestURL="data/navigation.json";
+			request.open("GET",requestURL,true);
+			request.responseType="json";
+			request.send();
+			request.addEventListener("load",function(){
+				var data=request.response;
+				for(title in data){
+				//TITLE - 1depth
+					TitleLi=document.createElement("li");
+					TitleLi.innerHTML="<a href='#'>"+title+"</a>";	
+					Depth2Ul=document.createElement("ul");
+					lnb.appendChild(TitleLi);
+					TitleLi.appendChild(Depth2Ul);
+				// SUB - 2depth
+					for(sub in data[title]){
+						Depth2Li=document.createElement("li");
+						Depth2Li.innerHTML="<a href='#'>"+data[title][sub]+"</a>"
+						Depth2Ul.appendChild(Depth2Li);
+					}
+				}
+				
+				var TitleList=lnb.children;
+				var TitleA=document.querySelectorAll("nav > ul > li > a");
+				var DepthUlList=document.querySelectorAll("nav ul ul");
+				
+				/* Title Event */
+				// height , display
+				for(var i=0; i<TitleList.length; i++){
+					TitleList[i].index=i;
+					TitleA[i].index=i;
+					LiList=DepthUlList[i].children;
+					UlArray[i]=LiList[i].offsetHeight*LiList.length+50;
+					
+					DepthUlList[i]	.style.display="none";
+					
+				/* Click Event */
+					TitleA[i].addEventListener("click",function(e){
+						e.preventDefault();
+						if(LnbFlag==false) return;
+						LnbFlag=false;
+						
+						n=this.index;
+						if(this.nextSibling.style.display=="none"){
+							for(var k=0; k<TitleList.length; k++){
+								if(k==n){
+									TitleList[k].style.height=UlArray[n]+"px";
+									DepthUlList[k].style.display="block";
+								}
+								else if(k!=n && DepthUlList[k].style.display=="block"){
+									TitleList[k].style.height=UlHeight;
+									j=k
+									setTimeout(function(){
+										DepthUlList[j].style.display="none";
+									},500);
+								}
+							}
+						}
+						else{
+							TitleList[n].style.height=UlHeight;
+							setTimeout(function(){
+								DepthUlList[n].style.display="none";
+								console.log("n display None");
+							},500);
+						}
+						setTimeout(function(){
+							LnbFlag=true;
+						},500);
+					});	
+				}
+				
+			});
+		},10);
+	}
+	
+	init();
+});
+</script>
+</head>
+
+<body>
+<div class="wrap"></div>
+</body>
+</html>
